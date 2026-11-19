@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.0
 - Add optional Nautilus right-click extension (`nautilus-extension/`), installed separately.
 
 ## 1.1.0
