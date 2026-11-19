@@ -1,0 +1,16 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ShellCheck
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck desktop-file-utils && shellcheck safe-eject install.sh uninstall.sh
+      - name: Validate desktop entry
+        run: sed "s|@BINDIR@|/usr/local/bin|" safe-eject.desktop > /tmp/x.desktop && desktop-file-validate /tmp/x.desktop
+      - name: Smoke test
+        run: ./safe-eject --version && ./safe-eject --help

@@ -4,6 +4,23 @@
 # unmounts every partition and powers the drive off. Never forces anything.
 set -u
 
+VERSION="1.1.0"
+
+case "${1:-}" in
+  -h|--help)
+    cat <<USAGE
+safe-eject $VERSION - safely eject a USB drive on GNOME/Ubuntu
+
+Usage: safe-eject [--help] [--version]
+
+Quits the file manager, syncs, unmounts all partitions of the USB drive and
+powers it off. Never forces anything. If several USB drives are mounted it
+asks which one to eject.
+USAGE
+    exit 0 ;;
+  -v|--version) echo "safe-eject $VERSION"; exit 0 ;;
+esac
+
 TITLE="Safe Eject"
 
 # Messages: English by default, Persian when the locale is fa*.
