@@ -104,6 +104,10 @@ safe-eject --help      # show usage
 safe-eject --version   # show version
 ```
 
+### Optional: right-click menu in Files
+
+An optional Nautilus extension adds **Safe Eject** to the right-click menu inside a USB drive. It is installed separately; see [nautilus-extension/](nautilus-extension/README.md).
+
 ### Optional: keyboard shortcut
 
 GNOME: *Settings → Keyboard → Keyboard Shortcuts → Custom Shortcuts → +*
