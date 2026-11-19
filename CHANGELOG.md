@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.0
+- `safe-eject /dev/sdX` ejects a specific USB disk (used by the GNOME Shell extension).
+
 ## 1.2.0
 - Add optional Nautilus right-click extension (`nautilus-extension/`), installed separately.
 
