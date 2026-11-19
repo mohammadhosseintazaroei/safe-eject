@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Safe Eject
+Name[fa]=جدا کردن امن درایو
+Comment=Safely unmount and power off a USB drive
+Exec=@BINDIR@/safe-eject
+Icon=media-eject
+Terminal=false
+Categories=Utility;
+Keywords=usb;eject;unmount;drive;

@@ -1,0 +1,77 @@
+#!/bin/bash
+# safe-eject - one-click safe removal of USB drives on GNOME/Ubuntu.
+# Quits the file manager (which usually keeps the drive "busy"), syncs,
+# unmounts every partition and powers the drive off. Never forces anything.
+set -u
+
+TITLE="Safe Eject"
+
+# Messages: English by default, Persian when the locale is fa*.
+case "${LC_ALL:-${LANG:-}}" in
+  fa*)
+    M_NONE="هیچ هارد USB متصل (و mount شده‌ای) پیدا نشد."
+    M_PICK="کدام درایو باید جدا شود؟"
+    M_BUSY="نتوانستم باز کنم:"
+    M_HOLD="برنامه‌هایی که آن را نگه داشته‌اند:"
+    M_UNKNOWN="نامشخص"
+    M_RETRY="آن‌ها را ببند و دوباره امتحان کن. هیچ چیزی اجبار نشد."
+    M_POWERFAIL="Unmount انجام شد ولی Power Off نشد:"
+    M_OK="✅ درایو با خیال راحت قابل جدا شدن است."
+    ;;
+  *)
+    M_NONE="No mounted USB drive found."
+    M_PICK="Which drive do you want to eject?"
+    M_BUSY="Could not unmount:"
+    M_HOLD="Applications holding it:"
+    M_UNKNOWN="unknown"
+    M_RETRY="Close them and try again. Nothing was forced."
+    M_POWERFAIL="Unmounted, but power-off failed:"
+    M_OK="✅ Safe to remove the drive."
+    ;;
+esac
+
+notify() { notify-send -i drive-removable-media "$TITLE" "$1" 2>/dev/null || echo "$1"; }
+fail()   { zenity --error --title="$TITLE" --no-markup --text="$1" 2>/dev/null || echo "$1" >&2; }
+
+# USB disks that have at least one mounted partition
+disks=()
+while read -r d; do
+  lsblk -nro MOUNTPOINT "$d" | grep -q . && disks+=("$d")
+done < <(lsblk -dnpo NAME,TRAN | awk '$2=="usb"{print $1}')
+
+if [ ${#disks[@]} -eq 0 ]; then notify "$M_NONE"; exit 0; fi
+
+if [ ${#disks[@]} -eq 1 ]; then
+  disk="${disks[0]}"
+else
+  args=()
+  for d in "${disks[@]}"; do args+=("$d" "$(lsblk -dno MODEL,SIZE "$d")"); done
+  disk=$(zenity --list --title="$TITLE" --text="$M_PICK" \
+         --column=Device --column=Info "${args[@]}") || exit 0
+fi
+
+# The file manager keeps a handle on the drive even after you leave it.
+nautilus -q 2>/dev/null
+sleep 1
+sync
+
+while read -r part; do
+  mp=$(lsblk -no MOUNTPOINT "$part" | head -1)
+  [ -z "$mp" ] && continue
+  if ! udisksctl unmount -b "$part" >/dev/null 2>&1; then
+    who=$(fuser -vm "$mp" 2>&1 | awk 'NR>2{print $NF}' | sort -u | tr '\n' ' ')
+    fail "$M_BUSY $mp
+$M_HOLD ${who:-$M_UNKNOWN}
+
+$M_RETRY"
+    exit 1
+  fi
+done < <(lsblk -lnpo NAME,TYPE "$disk" | awk '$2=="part"{print $1}')
+
+if out=$(udisksctl power-off -b "$disk" 2>&1); then
+  notify "$M_OK"
+else
+  fail "$M_POWERFAIL
+$out"
+  exit 1
+fi
