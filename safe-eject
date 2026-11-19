@@ -4,18 +4,18 @@
 # unmounts every partition and powers the drive off. Never forces anything.
 set -u
 
-VERSION="1.2.0"
+VERSION="1.3.0"
 
 case "${1:-}" in
   -h|--help)
     cat <<USAGE
 safe-eject $VERSION - safely eject a USB drive on GNOME/Ubuntu
 
-Usage: safe-eject [--help] [--version]
+Usage: safe-eject [--help] [--version] [/dev/sdX]
 
 Quits the file manager, syncs, unmounts all partitions of the USB drive and
 powers it off. Never forces anything. If several USB drives are mounted it
-asks which one to eject.
+asks which one to eject, unless you pass the disk (e.g. /dev/sdb).
 USAGE
     exit 0 ;;
   -v|--version) echo "safe-eject $VERSION"; exit 0 ;;
@@ -58,7 +58,13 @@ done < <(lsblk -dnpo NAME,TRAN | awk '$2=="usb"{print $1}')
 
 if [ ${#disks[@]} -eq 0 ]; then notify "$M_NONE"; exit 0; fi
 
-if [ ${#disks[@]} -eq 1 ]; then
+disk=""
+if [ -n "${1:-}" ]; then
+  # Optional argument: eject this specific USB disk (e.g. /dev/sdb).
+  target=$(readlink -f "$1")
+  for d in "${disks[@]}"; do [ "$d" = "$target" ] && disk="$d"; done
+  if [ -z "$disk" ]; then notify "$M_NONE"; exit 1; fi
+elif [ ${#disks[@]} -eq 1 ]; then
   disk="${disks[0]}"
 else
   args=()
