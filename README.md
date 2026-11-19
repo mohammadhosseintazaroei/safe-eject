@@ -102,11 +102,16 @@ Tip: right-click the icon and choose **Pin to Dash** to keep it one click away.
 safe-eject             # eject the USB drive (asks if there is more than one)
 safe-eject --help      # show usage
 safe-eject --version   # show version
+safe-eject /dev/sdb    # eject a specific USB disk
 ```
 
 ### Optional: right-click menu in Files
 
 An optional Nautilus extension adds **Safe Eject** to the right-click menu inside a USB drive. It is installed separately; see [nautilus-extension/](nautilus-extension/README.md).
+
+### Optional: top-bar menu (GNOME Shell extension)
+
+A companion extension adds an eject icon to the top bar listing your USB drives. It lives in its own repository: [safe-eject-gnome-shell](https://github.com/mohammadhosseintazaroei/safe-eject-gnome-shell).
 
 ### Optional: keyboard shortcut
 
